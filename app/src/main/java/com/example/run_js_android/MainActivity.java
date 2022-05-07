@@ -3,10 +3,9 @@ package com.example.run_js_android;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
-import android.view.View;
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.Scriptable;
 import android.util.Log;
+import android.view.View;
+import com.eclipsesource.v8.V8;
 import android.widget.EditText;
 
 
@@ -22,10 +21,15 @@ public class MainActivity extends AppCompatActivity {
         EditText input = findViewById(R.id.editTextInput);
         EditText output = findViewById(R.id.editTextOutput);
 
-        Context context = Context.enter(); //
-        context.setOptimizationLevel(-1); // this is required[2]
-        Scriptable scope = context.initStandardObjects();
-        Object result = context.evaluateString(scope, input.getText().toString(), "<cmd>", 1, null);
-        output.setText(result.toString());
+        V8 runtime = V8.createV8Runtime();
+        try {
+            Object result = runtime.executeScript(input.getText().toString());
+            output.setText(result.toString());
+        } catch (Exception e) {
+            output.setText("Error: " + e.toString());
+            Log.e(getApplicationContext().getPackageName(), e.toString());
+        } finally {
+            runtime.release();
+        }
     }
 }
