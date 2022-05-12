@@ -5,7 +5,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import com.eclipsesource.v8.V8;
+
+import android.webkit.ValueCallback;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
 import android.widget.EditText;
 
 
@@ -21,15 +24,19 @@ public class MainActivity extends AppCompatActivity {
         EditText input = findViewById(R.id.editTextInput);
         EditText output = findViewById(R.id.editTextOutput);
 
-        V8 runtime = V8.createV8Runtime();
+        WebView webView = new WebView(this);
+        WebSettings settings = webView.getSettings();
+        settings.setJavaScriptEnabled(true);
         try {
-            Object result = runtime.executeScript(input.getText().toString());
-            output.setText(result.toString());
+            webView.evaluateJavascript(input.getText().toString(), new ValueCallback<String>() {
+                @Override
+                public void onReceiveValue(String s) {
+                    output.setText(s);
+                }
+            });
         } catch (Exception e) {
             output.setText("Error: " + e.toString());
             Log.e(getApplicationContext().getPackageName(), e.toString());
-        } finally {
-            runtime.release();
         }
     }
 }
